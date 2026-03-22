@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 
 // Sustituye con el ID de tu programa tras tu primer build
-declare_id!("J2FyAhdPJ94JfvWdRNtik96dCCk4pwhsXoPKPKCe2UfM");
+declare_id!("Fdz1UdBtnjav1HBdyXxR7K43bgYs9DiqduULERXS9SJa");
 
 // Multiplicador (1e12) para evitar pérdida de precisión en divisiones enteras
 const PRECISION: u128 = 1_000_000_000_000;
@@ -34,10 +34,10 @@ pub mod llm_protocol {
             return Ok(());
         }
 
-        let time_elapsed = current_time.saturating_sub(global_state.last_update_time) as u128;
-        let rewards_generated = time_elapsed.checked_mul(global_state.reward_rate as u128).unwrap();
+        let time_elapsed = current_time.saturating_sub(global_state.last_update_time) as u64;
+        let rewards_generated = time_elapsed.checked_mul(global_state.reward_rate).unwrap();
 
-        let reward_per_usage_delta = rewards_generated
+        let reward_per_usage_delta = (rewards_generated as u128)
             .checked_mul(PRECISION)
             .unwrap()
             .checked_div(global_state.total_usage as u128)
@@ -85,13 +85,6 @@ pub mod llm_protocol {
         // 3. Imprime este nuevo uso (se sumará en futuras matemáticas)
         global_state.total_usage = global_state.total_usage.checked_add(amount).unwrap();
         user_state.user_usage = user_state.user_usage.checked_add(amount).unwrap();
-
-        // 4. Emitir Evento On-Chain para Indexadores (Transparencia)
-        emit!(UsageRegisteredEvent {
-            user_pubkey: ctx.accounts.user_pubkey.key(),
-            amount,
-            total_user_usage: user_state.user_usage,
-        });
 
         Ok(())
     }
@@ -294,13 +287,6 @@ impl UserState {
     pub const INIT_SPACE: usize = 8 + 16 + 8;
 }
 
-
-#[event]
-pub struct UsageRegisteredEvent {
-    pub user_pubkey: Pubkey,
-    pub amount: u64,
-    pub total_user_usage: u64,
-}
 
 #[error_code]
 pub enum CustomError {
