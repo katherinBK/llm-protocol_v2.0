@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 
-// Sustituye con el ID de tu programa tras tu primer build
 declare_id!("Fdz1UdBtnjav1HBdyXxR7K43bgYs9DiqduULERXS9SJa");
 
 // Multiplicador (1e12) para evitar pérdida de precisión en divisiones enteras
